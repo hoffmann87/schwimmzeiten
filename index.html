@@ -34,6 +34,21 @@
  .content-grid .teaser-main b {display:block;line-height:1.35;overflow-wrap:anywhere}
  .content-grid .teaser-time {flex-shrink:0;font-size:13px}
 }
+
+/* Sortierte Bestzeiten-Rangliste */
+.best-rank-panel{padding:18px 20px;margin-bottom:25px}
+.best-rank-panel .chart-choose{margin-bottom:14px}
+.best-rank-list{display:grid;gap:8px}
+.best-rank-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 13px;border:1px solid #e3ebef;border-radius:12px;background:#f8fafb;min-width:0}
+.best-rank-row:first-child{background:#edf8f2;border-color:#c8e6d3}
+.best-rank-number{font-weight:800;font-variant-numeric:tabular-nums;color:#526e7d}
+.best-rank-person{display:flex;align-items:center;gap:10px;min-width:0}
+.best-rank-name{min-width:0}
+.best-rank-name b{font-size:13px;display:block;overflow-wrap:anywhere;line-height:1.3}
+.best-rank-name small{font-size:11px;color:var(--mute);display:block;line-height:1.4}
+.best-rank-time{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.best-rank-extra{font-size:11px;color:var(--mute);margin:12px 0 0}
+@media(max-width:580px){.best-rank-panel{padding:14px}.best-rank-row{grid-template-columns:24px minmax(0,1fr) auto;padding:10px 9px;gap:7px}.best-rank-person{gap:6px}.best-rank-person .avatar{width:29px;height:29px;border-radius:9px}.best-rank-name b{font-size:12px}.best-rank-name small{font-size:10px}.best-rank-time{font-size:14px}}
 </style></head><body>
 <header class="hero"><div class="shell"><div class="brand"><div class="logo" aria-hidden="true"><svg viewBox="0 0 26 26"><path d="M1 9c3.7 0 3.7 3 7.4 3S12 9 15.7 9 19.4 12 23 12M1 16c3.7 0 3.7 3 7.4 3s3.7-3 7.3-3 3.7 3 7.3 3"/></svg></div>Schwimmzeiten </div>
  <div class="hero-row"><div><h1>Fünf Schwimmer.<br>Alle Zeiten im Blick.</h1><p>Offizielle Ergebnisse, schnellste Zeiten und Streckenvergleich – vom Mugele-Cup bis zu den Regionalmeisterschaften in Beilstein.</p></div>
@@ -55,7 +70,7 @@ const PEOPLE=[
 const MEETS=[...new Set(SEED_RESULTS.map(r=>r.event))];
 const VIEW_TABS=[['overview','Übersicht'],['best','Bestzeiten'],['timeline','Zeitenverlauf'],['compare','Vergleich'],['starts','Alle Starts']];
 const allRecords=SEED_RESULTS.slice();
-const state={name:'*',cat:'*',distance:'*',pool:'*',meet:'*',tab:'overview',graphKey:'50|Freistil|25',compareKey:'25|Freistil|25'};
+const state={name:'*',cat:'*',distance:'*',pool:'*',meet:'*',tab:'overview',bestKey:'50|Freistil|25',graphKey:'50|Freistil|25',compareKey:'25|Freistil|25'};
 const $=q=>document.querySelector(q);
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
@@ -105,6 +120,7 @@ function controls(){
 function render(){controls();const records=baseFilter();const content=el('content');
  const view={overview:renderOverview,best:renderBest,timeline:renderTimeline,compare:renderCompare,starts:renderStarts};
  content.innerHTML=(view[state.tab]||renderOverview)(records);
+ if(state.tab==='best')setupBestRanking(records);
  if(state.tab==='timeline')setupGraph(records);
  if(state.tab==='compare')setupCompare(records);
 }
@@ -129,11 +145,35 @@ function renderOverview(records){
 }
 function renderBest(records){
  const bs=bestFrom(records), rr=PEOPLE.filter(p=>state.name==='*'||p.name===state.name);
- return `<div class="section-title"><h2>Die schnellsten erfassten Zeiten</h2><span class="note">Nur vergleichbare Strecken werden zusammengefasst</span></div>
+ const {list,selected}=chooseOptions(records,state.bestKey,'50|Freistil|25');state.bestKey=selected;
+ return `<div class="section-title"><h2>Bestzeiten nach Strecke</h2><span class="note">Schnellste Zeit zuerst · Kurzbahn und Langbahn getrennt</span></div>
+ <section class="panel best-rank-panel">
+  <div class="chart-choose"><div class="control"><label for="best-select">Schwimmstrecke auswählen</label><select id="best-select">${list.map(o=>`<option value="${o.key}"${o.key===selected?' selected':''}>${esc(o.label)}</option>`).join('')}</select></div></div>
+  <div class="best-rank-list" id="best-ranking" aria-live="polite"></div>
+  <p class="best-rank-extra" id="best-rank-info"></p>
+ </section>
+ <div class="section-title"><h2>Persönliche Bestzeiten</h2><span class="note">Alle Strecken je Schwimmer</span></div>
  <div class="toolbar"><span class="hint">${bs.length} Strecken-Bestwerte aus den verfügbaren Protokollen</span><button class="btn" data-export>CSV exportieren</button></div>
  <div class="pb-grid">${rr.map(p=>{const x=bs.filter(r=>r.name===p.name).sort(sortLabels);return `<section class="panel pb-panel"><div class="name-head">${avatar(p.name)}<div><h3>${esc(p.name)}</h3><div class="tiny">${esc(p.club)}</div></div></div>${x.length?x.map(r=>`<div class="pb-line"><div><b>${recLabel(r)}</b><div class="date">${courseLabel(r)} · ${datefmt(r.date)} · ${meetShort(r)}${r.round==='Finale'?' · Finale':''}</div></div><div class="val">${r.time}<small>${r.points!=null?r.points+' Punkte':''}</small></div></div>`).join(''):uiEmpty('Keine passende Streckenzeit.')}</section>`}).join('')}</div>
  ${mutedNotice('Bestzeit-Definition:','Nur Resultate der erfassten offiziellen Protokolle. Kurzbahn (25-m-Becken) und Langbahn (50-m-Becken) haben immer getrennte Bestzeiten. Trainingszeiten und andere Wettkämpfe sind nicht berücksichtigt.')}`;
 }
+
+function setupBestRanking(records){
+ const sel=el('best-select');
+ if(!sel)return;
+ sel.addEventListener('change',e=>{state.bestKey=e.target.value;drawBestRanking(records)});
+ drawBestRanking(records);
+}
+function drawBestRanking(records){
+ const rows=bestFrom(records.filter(r=>keyOf(r)===state.bestKey)).sort((a,b)=>a.seconds-b.seconds||a.name.localeCompare(b.name,'de'));
+ const output=el('best-ranking');
+ if(!output)return;
+ output.innerHTML=rows.length?rows.map((r,i)=>`<div class="best-rank-row"><div class="best-rank-number">${i+1}.</div><div class="best-rank-person">${avatar(r.name)}<div class="best-rank-name"><b>${esc(r.name)}</b><small>${datefmt(r.date)} · ${meetShort(r)}</small></div></div><div class="best-rank-time">${esc(r.time)}</div></div>`).join(''):uiEmpty('Für diese Strecke ist noch keine Bestzeit hinterlegt.');
+ const active=PEOPLE.filter(p=>state.name==='*'||p.name===state.name);
+ const without=active.filter(p=>!rows.some(r=>r.name===p.name));
+ el('best-rank-info').textContent=`${rows.length} Schwimmer mit Zeit · aufsteigend nach Zeit sortiert${without.length?' · Ohne erfasstes Ergebnis: '+without.map(p=>p.name).join(', '):''}`;
+}
+
 function chooseOptions(records,current,fallback){
  const m=new Map();for(const r of records)m.set(keyOf(r),{key:keyOf(r),label:r.label+' · '+courseLabel(r),distance:r.distance,cat:r.cat,poolLength:r.poolLength});const l=[...m.values()].sort(sortLabels);
  const selected=l.some(x=>x.key===current)?current:(l.some(x=>x.key===fallback)?fallback:l[0]?.key);
