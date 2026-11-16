@@ -80,7 +80,7 @@
 <header class="hero"><div class="shell"><div class="hero-row"><div><h1>SWIMTRACK.</h1><p>Alle Starts. Alle Zeiten. Ein Ziel.</p></div>
  <div class="hero-tag"><span class="pulse"></span> 2 Wettkämpfe · 49 Ergebnisse</div></div></div></header>
 <div class="tabs-outer"><nav class="shell tabs" id="tabs" aria-label="Ansichten" role="tablist"></nav></div>
-<main class="shell main"><section class="panel filters" id="results-filters" aria-label="Ergebnisfilter"><span class="label">Schwimmer auswählen</span><div class="athletes" id="athletes" role="group" aria-label="Schwimmer"></div><div class="otherfilters"><div class="control"><label for="cat">Schwimmart</label><select id="cat"></select></div><div class="control"><label for="distance">Strecke</label><select id="distance"></select></div><div class="control"><label for="pool">Beckenlänge</label><select id="pool"><option value="*">Alle Becken</option><option value="25">Kurzbahn (25 m)</option><option value="50">Langbahn (50 m)</option></select></div><div class="control"><label for="meet">Wettkampf</label><select id="meet"></select></div><button type="button" class="reset" id="reset">Filter zurücksetzen</button></div><div class="tiny" style="margin-top:11px" id="filter-info"></div></section>
+<main class="shell main"><section class="panel filters" id="results-filters" aria-label="Ergebnisfilter"><div id="athlete-picker"><span class="label">Schwimmer auswählen</span><div class="athletes" id="athletes" role="group" aria-label="Schwimmer"></div></div><div class="otherfilters"><div class="control"><label for="cat">Schwimmart</label><select id="cat"></select></div><div class="control"><label for="distance">Strecke</label><select id="distance"></select></div><div class="control"><label for="pool">Beckenlänge</label><select id="pool"><option value="*">Alle Becken</option><option value="25">Kurzbahn (25 m)</option><option value="50">Langbahn (50 m)</option></select></div><div class="control"><label for="meet">Wettkampf</label><select id="meet"></select></div><button type="button" class="reset" id="reset">Filter zurücksetzen</button></div><div class="tiny" style="margin-top:11px" id="filter-info"></div></section>
 <div id="content" aria-live="polite"></div>
 </main>
 <footer class="footer"><div class="shell"><div><strong>Schwimmzeiten 2026</strong><p>Ausgewertet wurden die offiziellen Ergebnisprotokolle des Mugele-Cups (10.–11.10.2026) und der Regionalmeisterschaften Ostwürttemberg in Beilstein (07.11.2026). Vier Schwimmer sind Jahrgang 2017, David Janzen ist Jahrgang 2015. Datenstand: 16.11.2026. Für David wurden auch die Wettkämpfe 208, 216, 218 und 220 aus dem Beilsteiner Gesamtprotokoll ergänzt.</p><p>Alle bisherigen Ergebnisse stammen aus 25-m-Becken (Kurzbahn). Die Beckenlänge wird pro Start gespeichert. Bestzeiten, Kurven und Direktvergleiche trennen Kurzbahn (25 m) und Langbahn (50 m) konsequent. Technikstrecken werden ebenfalls separat ausgewertet.</p></div><div><strong>Quellen</strong><p>Mugele2026.pdf<br>Beilstein ergebnisse.pdf<br>Beilstein_2026_gesamt.pdf</p><p><a href="https://www.tsg1846.de/schwimmen/live/proto_gesamt.pdf" target="_blank" rel="noopener noreferrer">Offizielles Beilsteiner Protokoll</a></p></div></div></footer>
@@ -109,7 +109,7 @@ const courseLabel=r=>r.poolLength===25?'Kurzbahn (25 m)':r.poolLength===50?'Lang
 const courseShort=r=>r.poolLength===25?'KB 25 m':r.poolLength===50?'LB 50 m':'Becken ?';
 const sortLabels=(a,b)=>a.distance-b.distance||a.cat.localeCompare(b.cat,'de')||(a.poolLength||0)-(b.poolLength||0);
 const disciplines=()=>{const m=new Map();allRecords.forEach(r=>m.set(keyOf(r),{key:keyOf(r),label:r.label+' · '+courseLabel(r),distance:r.distance,cat:r.cat,poolLength:r.poolLength}));return [...m.values()].sort(sortLabels)};
-const baseFilter=()=>allRecords.filter(r=>(state.name==='*'||r.name===state.name)&&(state.cat==='*'||r.cat===state.cat)&&(state.distance==='*'||r.distance===Number(state.distance))&&(state.meet==='*'||r.event===state.meet)&&(state.pool==='*'||r.poolLength===Number(state.pool)));
+const baseFilter=()=>allRecords.filter(r=>(state.tab==='compare'||state.name==='*'||r.name===state.name)&&(state.cat==='*'||r.cat===state.cat)&&(state.distance==='*'||r.distance===Number(state.distance))&&(state.meet==='*'||r.event===state.meet)&&(state.pool==='*'||r.poolLength===Number(state.pool)));
 const earliest=r=>`${r.date} ${String(r.wk).padStart(3,'0')} ${r.round}`;
 const byTime=(a,b)=>a.seconds-b.seconds||(a.date<b.date?-1:a.date>b.date?1:0);
 const byDate=(a,b)=>a.date.localeCompare(b.date)||a.wk-b.wk;
@@ -134,6 +134,7 @@ function setup(){
  render();
 }
 function controls(){
+ el('athlete-picker').hidden=state.tab==='compare';
  el('cat').value=state.cat;el('pool').value=state.pool;el('meet').value=state.meet;
  const distances=[...new Set(allRecords.filter(r=>(state.cat==='*'||r.cat===state.cat)).map(r=>r.distance))].sort((a,b)=>a-b);
  el('distance').innerHTML='<option value="*">Alle Strecken</option>'+distances.map(d=>`<option value="${d}">${Number.isInteger(d)?d:String(d).replace('.',',')} m</option>`).join('');
@@ -141,7 +142,7 @@ function controls(){
  el('distance').value=state.distance;
  el('athletes').querySelectorAll('.athlete').forEach(btn=>{const on=btn.dataset.athlete===state.name;btn.classList.toggle('selected',on);btn.setAttribute('aria-pressed',String(on));});
  el('tabs').querySelectorAll('.tab').forEach(btn=>{const on=btn.dataset.tab===state.tab;btn.classList.toggle('active',on);btn.setAttribute('aria-selected',String(on));});
- const selected=state.name==='*'?'Alle Schwimmer':state.name;
+ const selected=state.tab==='compare'||state.name==='*'?'Alle Schwimmer':state.name;
  el('filter-info').textContent=`${selected} · ${state.pool==='*'?'alle Beckenlängen':state.pool==='25'?'Kurzbahn (25 m)':'Langbahn (50 m)'} · ${baseFilter().length} Ergebnisse`;
 }
 function render(){controls();el('results-filters').hidden=state.tab==='starttimes';const records=baseFilter();const content=el('content');
@@ -249,7 +250,7 @@ function renderCompare(records){
 }
 function setupCompare(records){el('compare-select').addEventListener('change',e=>{state.compareKey=e.target.value;drawCompare(records)});drawCompare(records)}
 function drawCompare(records){const rr=bestFrom(records.filter(r=>keyOf(r)===state.compareKey)).sort(byTime);const byName=new Map(rr.map(r=>[r.name,r]));const slow=Math.max(...rr.map(r=>r.seconds),1);const fast=rr[0]?.seconds;
- const group=PEOPLE.filter(p=>state.name==='*'||p.name===state.name).map(p=>({p,r:byName.get(p.name)})).sort((a,b)=>(a.r?.seconds??Infinity)-(b.r?.seconds??Infinity));
+ const group=PEOPLE.map(p=>({p,r:byName.get(p.name)})).sort((a,b)=>(a.r?.seconds??Infinity)-(b.r?.seconds??Infinity));
  el('compare-list').innerHTML=group.map(({p,r})=>r?`<div class="compare-row${r.seconds===fast?' winner':''}"><div class="left" style="color:${p.color}">${esc(p.name)}<small>${datefmt(r.date)} · ${meetShort(r)} · ${courseShort(r)}</small></div><div class="track"><div class="fill" style="width:${(r.seconds/slow*100).toFixed(1)}%;background:${p.color}"></div></div><div class="seconds">${r.time}${r.points!=null?`<small>${r.points} Punkte</small>`:''}</div></div>`:`<div class="compare-row none"><div class="left">${esc(p.name)}<small>Kein Start erfasst</small></div><div class="track"></div><div class="seconds">–</div></div>`).join('');
 }
 
