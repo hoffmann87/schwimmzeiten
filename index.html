@@ -12,6 +12,28 @@
 @media(max-width:900px){.content-grid{grid-template-columns:1fr}.profiles-list{grid-template-columns:repeat(2,minmax(0,1fr))}.otherfilters{grid-template-columns:repeat(2,minmax(0,1fr))}.reset{margin-top:1px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-row{align-items:flex-start;flex-direction:column}.hero-tag{margin-top:2px}}
 @media(max-width:580px){.shell{padding:0 15px}.hero .shell{padding-top:20px;padding-bottom:28px}.hero h1{margin:22px 0 10px}.hero p{font-size:14px}.tab{padding:13px 13px 11px;font-size:12px}.main{padding-top:17px}.filters{padding:15px}.athletes{gap:7px}.athlete{font-size:12px;padding:8px 10px}.otherfilters{grid-template-columns:1fr 1fr;gap:10px}.otherfilters .control:nth-child(3),.otherfilters .control:nth-child(4){grid-column:auto}.otherfilters .reset{grid-column:1/-1}.stats{gap:9px;margin-bottom:17px}.stat{padding:13px 15px}.stat-num{font-size:25px}.stat-sub{font-size:11px}.inner{padding:17px}.profiles-list{grid-template-columns:1fr 1fr;gap:9px}.mini-profile{padding:12px}.mini-profile h3{font-size:13px}.mini-profile .best{font-size:15px}.tilegrid{grid-template-columns:1fr 1fr}.section-title h2{font-size:19px}.section-title .note{display:none}.compare-row{grid-template-columns:112px 1fr 82px;gap:8px;padding:10px}.compare-row .left{font-size:12px}.compare-row .seconds{font-size:12px}.pb-grid{grid-template-columns:1fr}.footer .shell{display:block}.chart-panel{padding:13px}.data-table{min-width:680px}}
 @media print{.hero{background:#fff;color:var(--ink)}.hero p{color:var(--mute)}.tabs-outer,.filters,.btn{display:none}.main{padding-top:8px}.panel{box-shadow:none}.footer{background:white}}
+
+/* Mobile Breite: Karten an Filterleiste ausrichten */
+@media (max-width:900px) {
+ .content-grid {display:grid;grid-template-columns:minmax(0,1fr);width:100%;max-width:100%;min-width:0}
+ .content-grid > .panel {width:100%;max-width:100%;min-width:0}
+ .content-grid .tilegrid {width:100%;max-width:100%;min-width:0}
+ .content-grid .tilegrid > .profile {min-width:0;max-width:100%}
+ .content-grid .result-teaser {min-width:0;max-width:100%}
+ .content-grid .teaser-main {min-width:0;overflow:hidden}
+ .content-grid .teaser-meta {display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media (max-width:580px) {
+ .content-grid {grid-template-columns:minmax(0,1fr);gap:14px}
+ .content-grid > .panel.inner {padding:15px}
+ .content-grid .tilegrid {grid-template-columns:minmax(0,1fr);gap:9px}
+ .content-grid .profile {padding:12px 14px}
+ .content-grid .profile-name,.content-grid .profile-sub {overflow-wrap:anywhere}
+ .content-grid .result-teaser {gap:9px}
+ .content-grid .avatar {width:32px;height:32px;border-radius:10px}
+ .content-grid .teaser-main b {display:block;line-height:1.35;overflow-wrap:anywhere}
+ .content-grid .teaser-time {flex-shrink:0;font-size:13px}
+}
 </style></head><body>
 <header class="hero"><div class="shell"><div class="brand"><div class="logo" aria-hidden="true"><svg viewBox="0 0 26 26"><path d="M1 9c3.7 0 3.7 3 7.4 3S12 9 15.7 9 19.4 12 23 12M1 16c3.7 0 3.7 3 7.4 3s3.7-3 7.3-3 3.7 3 7.3 3"/></svg></div>Schwimmzeiten </div>
  <div class="hero-row"><div><h1>Fünf Schwimmer.<br>Alle Zeiten im Blick.</h1><p>Offizielle Ergebnisse, schnellste Zeiten und Streckenvergleich – vom Mugele-Cup bis zu den Regionalmeisterschaften in Beilstein.</p></div>
