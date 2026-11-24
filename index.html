@@ -79,7 +79,7 @@
 @media(max-width:400px){.starttimes-panel{padding:14px}.starttimes-card{padding:12px}.starttimes-when strong{font-size:15px}.starttimes-when span{font-size:10px}}
 </style></head><body>
 <header class="hero"><div class="shell"><div class="hero-row"><div><h1>SWIMTRACK.</h1><p>Alle Starts. Alle Zeiten. Ein Ziel.</p></div>
- <div class="hero-tag"><span class="pulse"></span> 2 Wettkämpfe · 49 Ergebnisse</div></div></div></header>
+ <div class="hero-tag"><span class="pulse"></span> <span id="hero-stats">Wettkampfstatistik wird geladen …</span></div></div></div></header>
 <div class="tabs-outer"><nav class="shell tabs" id="tabs" aria-label="Ansichten" role="tablist"></nav></div>
 <main class="shell main"><section class="panel filters" id="results-filters" aria-label="Ergebnisfilter"><div id="athlete-picker"><span class="label">Schwimmer auswählen</span><div class="athletes" id="athletes" role="group" aria-label="Schwimmer"></div></div><div class="otherfilters"><div class="control"><label for="cat">Schwimmart</label><select id="cat"></select></div><div class="control"><label for="distance">Strecke</label><select id="distance"></select></div><div class="control"><label for="pool">Beckenlänge</label><select id="pool"><option value="*">Alle Becken</option><option value="25">Kurzbahn (25 m)</option><option value="50">Langbahn (50 m)</option></select></div><div class="control"><label for="meet">Wettkampf</label><select id="meet"></select></div><button type="button" class="reset" id="reset">Filter zurücksetzen</button></div><div class="tiny" style="margin-top:11px" id="filter-info"></div></section>
 <div id="content" aria-live="polite"></div>
@@ -146,7 +146,11 @@ function controls(){
  const selected=state.tab==='compare'||state.name==='*'?'Alle Schwimmer':state.name;
  el('filter-info').textContent=`${selected} · ${state.pool==='*'?'alle Beckenlängen':state.pool==='25'?'Kurzbahn (25 m)':'Langbahn (50 m)'} · ${baseFilter().length} Ergebnisse`;
 }
-function render(){controls();el('results-filters').hidden=state.tab==='starttimes';const records=baseFilter();const content=el('content');
+function render(){
+ const meetCount=new Set(allRecords.map(r=>r.event)).size;
+ const resultCount=allRecords.length;
+ el('hero-stats').textContent=`${meetCount} ${meetCount===1?'Wettkampf':'Wettkämpfe'} · ${resultCount} ${resultCount===1?'Ergebnis':'Ergebnisse'}`;
+ controls();el('results-filters').hidden=state.tab==='starttimes';const records=baseFilter();const content=el('content');
  const view={overview:renderOverview,best:renderBest,timeline:renderTimeline,compare:renderCompare,starttimes:renderStartTimes,starts:renderStarts};
  content.innerHTML=(view[state.tab]||renderOverview)(records);
  if(state.tab==='starttimes')setupStartTimes();
