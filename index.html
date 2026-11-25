@@ -100,7 +100,7 @@ const MEETS=[...new Set(SEED_RESULTS.map(r=>r.event))].sort((a,b)=>{
  const latestDate=event=>SEED_RESULTS.reduce((latest,r)=>r.event===event&&r.date>latest?r.date:latest,'');
  return latestDate(b).localeCompare(latestDate(a))||a.localeCompare(b,'de');
 });
-const VIEW_TABS=[['overview','Übersicht'],['best','Bestzeiten'],['timeline','Zeitenverlauf'],['compare','Vergleich'],['starttimes','Startzeiten'],['starts','Alle Starts']];
+const VIEW_TABS=[['overview','Übersicht'],['best','Bestzeiten'],['starttimes','Startzeiten'],['compare','Vergleich'],['timeline','Zeitenverlauf'],['starts','Alle Starts']];
 const allRecords=SEED_RESULTS.slice();
 const state={name:'*',cat:'*',distance:'*',pool:'*',meet:'*',tab:'overview',startMeet:'',startName:'*',bestKey:'50|Freistil|25',graphKey:'50|Freistil|25',compareKey:'25|Freistil|25'};
 const $=q=>document.querySelector(q);
