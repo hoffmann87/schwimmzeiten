@@ -127,7 +127,11 @@ function setup(){
  el('tabs').innerHTML=VIEW_TABS.map(([v,l])=>`<button type="button" class="tab${state.tab===v?' active':''}" data-tab="${v}" role="tab" aria-selected="${state.tab===v}">${l}</button>`).join('');
  el('athletes').innerHTML=`<button type="button" class="athlete" data-athlete="*">Alle fünf</button>`+PEOPLE.map(p=>`<button type="button" class="athlete" data-athlete="${esc(p.name)}">${esc(p.name)}</button>`).join('');
  el('cat').innerHTML='<option value="*">Alle Schwimmarten</option>'+['Freistil','Rücken','Brust','Schmetterling','Lagen','Technik'].map(v=>`<option value="${v}">${v}</option>`).join('');
- el('meet').innerHTML='<option value="*">Alle Wettkämpfe</option>'+MEETS.map(m=>`<option value="${esc(m)}">${esc(m.replace('Regionalmeisterschaften ','').replace(' 2026',''))}</option>`).join('');
+ el('meet').innerHTML='<option value="*">Alle Wettkämpfe</option>'+MEETS.map(m=>{
+  const year=SEED_RESULTS.find(r=>r.event===m)?.date.slice(0,4)||m.match(/\b\d{4}\b/)?.[0]||'';
+  const name=m.replace('Regionalmeisterschaften ','').replace(/\s+\d{4}$/, '');
+  return `<option value="${esc(m)}">${esc(name)} (${esc(year)})</option>`;
+ }).join('');
  document.addEventListener('click',e=>{
   const tab=e.target.closest('[data-tab]');if(tab){state.tab=tab.dataset.tab;render();window.scrollTo({top:165,behavior:'smooth'});return;}
   const a=e.target.closest('[data-athlete]');if(a){state.name=a.dataset.athlete;render();return;}
