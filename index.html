@@ -95,7 +95,10 @@ const PEOPLE=[
  {name:'David Janzen',short:'David',year:2015,initials:'DJ',club:'Aalener Sportallianz',color:'#c05765',pale:'#fff0f1'},
  {name:'Lukas Gölzer',short:'Lukas',year:2017,initials:'LG',club:'Schwimmverein Oberkochen',color:'#8959a6',pale:'#f0e9f9'}
 ];
-const MEETS=[...new Set(SEED_RESULTS.map(r=>r.event))];
+const MEETS=[...new Set(SEED_RESULTS.map(r=>r.event))].sort((a,b)=>{
+ const latestDate=event=>SEED_RESULTS.reduce((latest,r)=>r.event===event&&r.date>latest?r.date:latest,'');
+ return latestDate(b).localeCompare(latestDate(a))||a.localeCompare(b,'de');
+});
 const VIEW_TABS=[['overview','Übersicht'],['best','Bestzeiten'],['timeline','Zeitenverlauf'],['compare','Vergleich'],['starttimes','Startzeiten'],['starts','Alle Starts']];
 const allRecords=SEED_RESULTS.slice();
 const state={name:'*',cat:'*',distance:'*',pool:'*',meet:'*',tab:'overview',startMeet:'',startName:'*',bestKey:'50|Freistil|25',graphKey:'50|Freistil|25',compareKey:'25|Freistil|25'};
